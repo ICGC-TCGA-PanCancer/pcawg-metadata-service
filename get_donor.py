@@ -1,6 +1,7 @@
 from flask import current_app as capp
 from es_query_builder import query_builder
 import unicodedata
+import re
 
 field_mapping = {
     'project': 'dcc_project_code',
@@ -19,6 +20,8 @@ field_mapping = {
 def get_donor(request):
     search = request.args.get('search')
     search = unicodedata.normalize('NFKD', search).encode('ascii','ignore') if search else ''
+    search = re.sub('[!@#${}\[\]]', '', search).replace('groovy', '')
+
     sort = request.args.get('sort')
     order = request.args.get('order') if request.args.get('order') == 'desc' else 'asc'
     limit = request.args.get('limit')
