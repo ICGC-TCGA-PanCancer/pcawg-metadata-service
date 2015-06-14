@@ -4,6 +4,7 @@ from elasticsearch import ElasticsearchException, Elasticsearch
 from get_donor import get_donor
 import pprint
 
+VERSION = 'v0'
 
 # create app
 app = Flask(__name__)
@@ -18,7 +19,7 @@ def app_init(app):
 
 
 # define routes
-@app.route('/donor/search', methods=['GET', 'OPTIONS'])
+@app.route('/api/' + VERSION + '/donor/search', methods=['GET', 'OPTIONS'])
 @cross_origin()
 def donor_search():
     data = get_donor(request)
@@ -26,7 +27,7 @@ def donor_search():
     return Response(json.dumps(data), mimetype='mimetype')
 
 
-@app.route('/donor/<donor_unique_id>', methods=['GET', 'OPTIONS'])
+@app.route('/api/' + VERSION + '/donor/<donor_unique_id>', methods=['GET', 'OPTIONS'])
 @cross_origin()
 def donor(donor_unique_id):
 	return donor_unique_id
