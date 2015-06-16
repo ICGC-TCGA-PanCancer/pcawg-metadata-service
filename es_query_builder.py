@@ -66,24 +66,45 @@ def build_should_clause(keywords, field_mapping):
             'submitter_donor_id',
             'normal_alignment_status.submitter_specimen_id',
             'tumor_alignment_status.submitter_specimen_id',
+            'normal_alignment_status.aliquot_id',
+            'tumor_alignment_status.aliquot_id',
             'flags.variant_calling_performed',
           ): continue
 
-        if terms: should_clause.append(
-            {
-                "terms": {
-                    f: list(terms)
-                }
-            }
-        )
+        if terms:
+            if f.startswith("tumor_alignment_status."):
+                should_clause.append(
+                    {
+                     "nested": {
+                       "path": "tumor_alignment_status",
+                         "filter": {
+                           "terms": {
+                             f: list(terms)
+                          }
+                        }
+                      }
+                    }
+                )
+            else:
+                should_clause.append( { "terms": { f: list(terms) } } )
 
-        if prefixes: should_clause.append(
-            {
-                "prefix": {
-                    f: list(prefixes)
-                }
-            }
-        )
+
+        if prefixes:
+            if f.startswith("tumor_alignment_status."):
+                should_clause.append(
+                    {
+                     "nested": {
+                       "path": "tumor_alignment_status",
+                         "filter": {
+                           "prefix": {
+                             f: list(prefixes)
+                          }
+                        }
+                      }
+                    }
+                )
+            else:
+                should_clause.append( { "prefix": { f: list(prefixes) } } )
 
     return should_clause
 
@@ -108,10 +129,38 @@ def build_must_clause(field_matches):
 
     must_clause = []
     for f in terms:
-        must_clause.append( { "terms": { f: terms.get(f) } } )
+        if f.startswith("tumor_alignment_status."):
+            must_clause.append(
+                {
+                 "nested": {
+                   "path": "tumor_alignment_status",
+                     "filter": {
+                       "terms": {
+                         f: terms.get(f)
+                      }
+                    }
+                  }
+                }
+            )
+        else:
+            must_clause.append( { "terms": { f: terms.get(f) } } )
 
     for f in prefixes:
-        must_clause.append( { "prefix": { f: prefixes.get(f) } } )
+        if f.startswith("tumor_alignment_status."):
+            must_clause.append(
+                {
+                 "nested": {
+                   "path": "tumor_alignment_status",
+                     "filter": {
+                       "prefix": {
+                         f: prefixes.get(f)
+                      }
+                    }
+                  }
+                }
+            )
+        else:
+            must_clause.append( { "prefix": { f: prefixes.get(f) } } )
 
     return must_clause
 

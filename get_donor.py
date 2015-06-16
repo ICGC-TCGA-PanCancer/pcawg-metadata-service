@@ -1,4 +1,4 @@
-from flask import current_app as capp
+from flask import current_app as capp, json
 from es_query_builder import query_builder
 import unicodedata
 import re
@@ -14,7 +14,9 @@ field_mapping = {
     'qc_failed': 'flags.is_manual_qc_failed',
     'tumor_count': 'flags.all_tumor_specimen_aliquot_counts',
     'normal_specimen_id': 'normal_alignment_status.submitter_specimen_id',
+    'normal_aliquot_id': 'normal_alignment_status.aliquot_id',
     'tumor_specimen_id': 'tumor_alignment_status.submitter_specimen_id',
+    'tumor_aliquot_id': 'tumor_alignment_status.aliquot_id',
 }
 
 def get_donor(request):
@@ -49,12 +51,16 @@ def get_donor(request):
                 field_mapping.get('tumor_count'),
                 field_mapping.get('normal_specimen_id'),
                 field_mapping.get('tumor_specimen_id'),
+                field_mapping.get('normal_aliquot_id'),
+                field_mapping.get('tumor_aliquot_id'),
                 ],
             "size": limit,
             "from": offset,
             "sort": es_sort
         }
     )
+
+    #print json.dumps(es_query, indent=2)
 
     res = capp.es.search(
                             index = capp.config['ES_INDEX'], 
@@ -79,6 +85,10 @@ def get_donor(request):
                               if hit['fields'].get(field_mapping.get('normal_specimen_id')) else '',
             'tumor_specimen_id': hit['fields'][field_mapping.get('tumor_specimen_id')] \
                               if hit['fields'].get(field_mapping.get('tumor_specimen_id')) else [],
+            'normal_aliquot_id': hit['fields'][field_mapping.get('normal_aliquot_id')][0] \
+                              if hit['fields'].get(field_mapping.get('normal_aliquot_id')) else '',
+            'tumor_aliquot_id': hit['fields'][field_mapping.get('tumor_aliquot_id')] \
+                              if hit['fields'].get(field_mapping.get('tumor_aliquot_id')) else [],
         })
 
     return data

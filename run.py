@@ -2,7 +2,6 @@ from flask import Flask, Response, json, request
 from flask.ext.cors import cross_origin
 from elasticsearch import ElasticsearchException, Elasticsearch
 from get_donor import get_donor
-import pprint
 
 VERSION = 'v0'
 
@@ -24,7 +23,7 @@ def app_init(app):
 def donor_search():
     data = get_donor(request)
 
-    return Response(json.dumps(data), mimetype='mimetype')
+    return Response(json.dumps(data), mimetype='application/json')
 
 
 @app.route('/api/' + VERSION + '/donor/<donor_unique_id>', methods=['GET', 'OPTIONS'])
